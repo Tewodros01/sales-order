@@ -8,6 +8,7 @@ import {
   Form,
   Spin,
   Divider,
+  message,
 } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -69,18 +70,26 @@ const LineItemsTable: React.FC<Props> = ({
     }
   };
 
-  // Function to calculate amount including tax
   const calculateAmount = (quantity: number, unitPrice: number, taxRate: number) => {
     const lineAmount = quantity * unitPrice;
     const taxAmount = lineAmount * (taxRate / 100);
     return lineAmount + taxAmount;
   };
 
-  // Function to get the tax rate from the taxes array
   const getTaxRate = (taxId: string | undefined) => {
     const tax = taxes.find((tax) => tax.id === taxId);
     return tax ? tax.rate : 0;
   };
+
+  const validateQuantity = (inventoryItemId: string, quantity: number) => {
+    const selectedItem = inventoryItems.find((item) => item.id === inventoryItemId);
+    if (selectedItem && quantity > selectedItem.quantity) {
+      message.error(`Insufficient stock. Only ${selectedItem.quantity} items available.`);
+      return { validateStatus: "error" as const, help: `Insufficient stock. Only ${selectedItem.quantity} items available.` };
+    }
+    return {};
+  };
+
 
   const validateTax = (taxId?: string) =>
     !taxId
@@ -92,11 +101,14 @@ const LineItemsTable: React.FC<Props> = ({
       title: "Quantity",
       dataIndex: "quantity",
       render: (_: unknown, record: LineItem) => (
-        <InputNumber
-          min={0}
-          value={record.quantity}
-          onChange={(v) => onChange(record.key, "quantity", v)}
-        />
+         <Form.Item {...validateQuantity(record.inventoryItemId, record.quantity)} style={{ margin: 0 }} >
+           <InputNumber
+            min={0}
+            value={record.quantity}
+            onChange={(v) => onChange(record.key, "quantity", v)}
+          />
+        </Form.Item>
+
       ),
     },
     {
@@ -120,7 +132,7 @@ const LineItemsTable: React.FC<Props> = ({
           style={{ width: 200 }}
           onChange={(v) => onChange(record.key, "inventoryItemId", v)}
           loading={loading}
-          dropdownRender={(menu) => (
+          popupRender={(menu) => (
             <>
               {menu}
               <Divider style={{ margin: "8px 0" }} />
@@ -175,7 +187,7 @@ const LineItemsTable: React.FC<Props> = ({
           style={{ width: 200 }}
           onChange={(v) => onChange(record.key, "glAccountId", v)}
           loading={loading}
-          dropdownRender={(menu) => (
+          popupRender={(menu) => (
             <>
               {menu}
               <Divider style={{ margin: "8px 0" }} />
@@ -232,7 +244,7 @@ const LineItemsTable: React.FC<Props> = ({
             style={{ width: 200 }}
             onChange={(v) => onChange(record.key, "taxId", v)}
             loading={loading}
-            dropdownRender={(menu) => (
+            popupRender={(menu) => (
               <>
                 {menu}
                 <Divider style={{ margin: "8px 0" }} />

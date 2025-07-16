@@ -24,6 +24,7 @@ const AddInventoryItemModal: React.FC<Props> = ({
         name: values.name,
         description: values.description,
         unitPrice: values.unitPrice,
+        quantity: values.quantity,
       };
 
       setLoading(true);
@@ -77,6 +78,16 @@ const AddInventoryItemModal: React.FC<Props> = ({
           label="Unit Price"
           name="unitPrice"
           rules={[{ required: true, message: "Please enter unit price" }]}
+        >
+          <InputNumber
+            min={0}
+            style={{ width: "100%" }}
+          />
+        </Form.Item>
+        <Form.Item
+          label="Quantity"
+          name="quantity"
+          rules={[{ required: true, message: "Please enter quantity" }]}
         >
           <InputNumber
             min={0}
