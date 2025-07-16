@@ -13,7 +13,6 @@ export class AccountService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateAccountDto): Promise<Account> {
-    // Check unique accountNumber
     const duplicate = await this.prisma.account.findUnique({
       where: { accountNumber: data.accountNumber },
     });
@@ -30,7 +29,7 @@ export class AccountService {
         type: data.type,
         inactive: data.inactive ?? false,
         isAR: data.isAR ?? (data.type === "AccountsReceivable"),
-        isGL: data.isGL ?? true, // default all accounts to GL unless explicitly false
+        isGL: data.isGL ?? true,
       },
     });
   }
@@ -52,7 +51,6 @@ export class AccountService {
   }
 
   async update(id: string, data: UpdateAccountDto): Promise<Account> {
-    // Ensure exists
     await this.findOne(id);
 
     if (data.accountNumber) {

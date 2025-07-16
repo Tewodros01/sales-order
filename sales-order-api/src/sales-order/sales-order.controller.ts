@@ -70,7 +70,6 @@ findAll(
   @Get('export')
   async export(@Res() res: Response) {
     const data = await this.service.findAll({});
-    // For now, just return JSON. You can implement Excel export later.
     return res.json(data);
   }
 }

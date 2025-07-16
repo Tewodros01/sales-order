@@ -3,23 +3,23 @@ import { AccountType } from "@prisma/client";
 
 export class CreateAccountDto {
   @IsString()
-  accountNumber: string; // REQUIRED
+  accountNumber: string;
 
   @IsString()
-  title: string; // REQUIRED
+  title: string;
 
   @IsEnum(AccountType)
-  type: AccountType; // REQUIRED
+  type: AccountType;
 
   @IsOptional()
   @IsBoolean()
-  inactive?: boolean; // Optional, defaults to false
+  inactive?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  isAR?: boolean; // Optional flag, default handled in service
+  isAR?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  isGL?: boolean; // Optional flag, default handled in service
+  isGL?: boolean;
 }

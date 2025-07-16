@@ -31,25 +31,20 @@ export class SalesOrderService {
   }
 
   async create(dto: CreateSalesOrderDto) {
-    // Ensure that at least one line item exists, regardless of the transaction type
     if (!dto.lineItems || dto.lineItems.length === 0) {
       throw new BadRequestException('At least one line item is required.');
     }
 
     const soNumber = dto.soNumber || `SO-${Date.now()}`;
 
-    // Process line items for both GOODS and SERVICES
     const lineItemsData = dto.lineItems.map(async (item) => {
-      // For GOODS transactions, ensure that inventoryItemId is provided
       if (dto.transactionType === 'GOODS' && !item.inventoryItemId) {
         throw new BadRequestException('Inventory item is required for GOODS transaction.');
       }
 
-      // Get tax rate if applicable
       const taxRate = item.taxId ? await this.getTaxRate(item.taxId) : 0;
       const amount = this.calculateAmount(item.quantity, item.unitPrice, taxRate);
 
-      // Create line item for both GOODS and SERVICES
       return {
         quantity: item.quantity,
         shipped: item.shipped ?? 0,
@@ -64,11 +59,9 @@ export class SalesOrderService {
       };
     });
 
-    // Wait for all line items to be processed
     const lineItems = await Promise.all(lineItemsData);
     const totalAmount = lineItems.reduce((sum, item) => sum + item.amount, 0);
 
-    // Create sales order with line items for both GOODS and SERVICES
     return this.prisma.salesOrder.create({
       data: {
         soNumber,
@@ -91,7 +84,6 @@ export class SalesOrderService {
     });
   }
 
-
   async findAll(query: {
     search?: string;
     dateFrom?: string;
@@ -105,24 +97,20 @@ export class SalesOrderService {
     const filters: any = {};
 
     console.log('Query parameters:', query);
-    // Apply status filter
     if (query.status) {
       filters.status = query.status;
     }
 
-    // Apply date filters
     if (query.dateFrom || query.dateTo) {
       filters.date = {};
       if (query.dateFrom) filters.date.gte = new Date(query.dateFrom);
       if (query.dateTo) filters.date.lte = new Date(query.dateTo);
     }
 
-    // Apply transaction type filter
     if (query.transactionType) {
       filters.transactionType = query.transactionType;
     }
 
-    // Apply arAccountId filter
     if (query.arAccountId) {
       filters.arAccount = { id: query.arAccountId };  // Filter by AR Account's ID
     }
