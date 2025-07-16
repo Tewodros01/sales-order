@@ -1,4 +1,4 @@
-import { IsString, IsNumber, Length } from 'class-validator';
+import { IsString, IsNumber, Length, IsOptional } from 'class-validator';
 
 export class CreateInventoryItemDto {
   @IsString()
@@ -14,4 +14,8 @@ export class CreateInventoryItemDto {
 
   @IsNumber()
   unitPrice: number;
+
+  @IsNumber()
+  @IsOptional()
+  quantity?: number;
 }

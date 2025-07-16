@@ -14,10 +14,6 @@ datasource db {
 }
 
 
-//--------------------
-// Enums
-//--------------------
-
 enum AccountType {
   AccountsPayable
   AccountsReceivable
@@ -64,118 +60,116 @@ enum TaxParty {
   CUSTOMER
 }
 
-//--------------------
-// Models
-//--------------------
-
 model Customer {
-  id          String        @id @default(uuid())    // UUID as primary key for uniqueness
-  name        String        // Customer's full name
-  email       String?       // Optional email, nullable if no email exists
-  salesOrders SalesOrder[]  // One-to-many relation with SalesOrders
+  id          String        @id @default(uuid())
+  name        String
+  email       String?
+  salesOrders SalesOrder[]
 
   // Ensure email uniqueness and indexing for performance
   @@unique([email])
 }
 
 model Account {
-  id             String       @id @default(uuid())    // UUID as primary key
-  accountNumber  String       @unique                 // Unique account number
-  title          String       // Account title
-  type           AccountType  // Type of account (Payable, Receivable, etc.)
-  inactive       Boolean      @default(false)         // Boolean flag for inactive accounts
+  id             String       @id @default(uuid())
+  accountNumber  String       @unique
+  title          String
+  type           AccountType
+  inactive       Boolean      @default(false)
 
-  isAR           Boolean      @default(false)         // Indicates if it’s an AR account
-  isGL           Boolean      @default(false)         // Indicates if it’s a GL account
+  isAR           Boolean      @default(false)
+  isGL           Boolean      @default(false)
 
-  salesOrders    SalesOrder[] // Relation with SalesOrders
-  lineItems      SalesOrderLineItem[] // Relation with SalesOrderLineItems
-  taxes          Tax[]        // Relation with taxes for this account
+  salesOrders    SalesOrder[]
+  lineItems      SalesOrderLineItem[]
+  taxes          Tax[]
 
   // Indexing for AR and GL accounts
   @@index([isAR, isGL])
 }
 
 model InventoryItem {
-  id          String      @id @default(uuid())  // UUID as primary key
-  sku         String      @unique                 // Unique SKU for inventory item
-  name        String      // Name of the item
-  description String      // Description of the item
-  unitPrice   Decimal     @db.Decimal(10, 2)      // Precision for monetary values
-  lineItems   SalesOrderLineItem[] // Relation with SalesOrderLineItems
+  id          String      @id @default(uuid())
+  sku         String      @unique
+  name        String
+  description String
+  unitPrice   Decimal     @db.Decimal(10, 2)
+  quantity    Int         @default(0)
+
+  lineItems   SalesOrderLineItem[]
 
   @@index([sku]) // Index on SKU for quick lookup
 }
 
 model SalesOrder {
-  id                    String       @id @default(cuid())  // Only id should be AUTO_INCREMENT
+  id                    String       @id @default(cuid())
   soNumber              String
 
-  customerId            String?      // Nullable to support one-time customer
+  customerId            String?
   customer              Customer?    @relation(fields: [customerId], references: [id])
-  oneTimeCustomerName   String?      // Support for one-time customers
+  oneTimeCustomerName   String?
 
-  date                  DateTime     @default(now())           // Timestamp of when the order was created
-  customerPO            String?      // Customer purchase order reference
+  date                  DateTime     @default(now())
+  customerPO            String?
 
-  arAccountId           String      // Foreign key to AR Account
-  arAccount             Account     @relation(fields: [arAccountId], references: [id], onDelete: Cascade) // Cascade delete AR account
+  arAccountId           String
+  arAccount             Account     @relation(fields: [arAccountId], references: [id], onDelete: Cascade)
 
-  shipBy                DateTime?    // Expected shipping date
+  shipBy                DateTime?
   transactionType       TransactionType
   transactionOrigin     TransactionOrigin?
   shipVia               ShipVia?
 
-  status                SalesOrderStatus   @default(DRAFT)  // Default status is DRAFT
-  lineItems             SalesOrderLineItem[] // SalesOrderLineItems relation
+  status                SalesOrderStatus   @default(DRAFT)
+  lineItems             SalesOrderLineItem[]
 
-  totalAmount           Decimal      @db.Decimal(10, 2)      // Total amount for the sales order
-  createdAt             DateTime     @default(now())           // Timestamp of when the order was created
-  updatedAt             DateTime     @updatedAt                 // Timestamp of when the order was last updated
+  totalAmount           Decimal      @db.Decimal(10, 2)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 
   @@index([customerId, arAccountId, status]) // Indexing for performance optimization
 }
 
 model SalesOrderLineItem {
-  id              String        @id @default(uuid())      // UUID as primary key
-  salesOrderId    String       // Foreign key to SalesOrder
-  salesOrder      SalesOrder   @relation(fields: [salesOrderId], references: [id], onDelete: Cascade) // Cascade delete SalesOrder
+  id              String        @id @default(uuid())
+  salesOrderId    String
+  salesOrder      SalesOrder   @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
 
-  quantity        Int          // Quantity of the item
-  shipped         Int          @default(0)                // Quantity of items shipped
+  quantity        Int
+  shipped         Int          @default(0)
 
-  inventoryItemId String?      // Nullable, in case the item is untracked
-  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade) // Cascade delete InventoryItem
+  inventoryItemId String?
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
 
-  description     String       // Description of the line item
-  unitPrice       Decimal      @db.Decimal(10, 2)          // Unit price of the item
-  glAccountId     String       // Foreign key to GL Account
-  glAccount       Account      @relation(fields: [glAccountId], references: [id], onDelete: Cascade) // Cascade delete GL Account
+  description     String
+  unitPrice       Decimal      @db.Decimal(10, 2)
+  glAccountId     String
+  glAccount       Account      @relation(fields: [glAccountId], references: [id], onDelete: Cascade)
 
-  taxId           String?      // Foreign key to Tax for this line item
-  tax             Tax?         @relation(fields: [taxId], references: [id], onDelete: Cascade) // Cascade delete Tax
+  taxId           String?
+  tax             Tax?         @relation(fields: [taxId], references: [id], onDelete: Cascade)
 
-  project         String?      // Optional project field
-  phase           String?      // Optional phase field
+  project         String?
+  phase           String?
 
-  amount          Decimal      @db.Decimal(10, 2)          // Total amount for this line item
+  amount          Decimal      @db.Decimal(10, 2)
 
   @@index([salesOrderId, glAccountId, inventoryItemId]) // Index for fast retrieval
 }
 
 
 model Tax {
-  id                  String        @id @default(uuid())       // UUID as primary key
-  taxType             String       // Type of tax (e.g., VAT)
+  id                  String        @id @default(uuid())
+  taxType             String
   rate                Decimal      @db.Decimal(5, 2)          // Tax rate (percentage)
-  taxAuthorityName    String?      // Optional tax authority name
-  vendorOrCustomer    TaxParty     // Tax applies to vendor or customer
-  vendorTaxOffice     String?      // Vendor tax office (optional)
+  taxAuthorityName    String?
+  vendorOrCustomer    TaxParty
+  vendorTaxOffice     String?
 
   glAccountId         String       // Foreign key to GL Account
-  glAccount           Account      @relation(fields: [glAccountId], references: [id], onDelete: Cascade) // Cascade delete GL Account
+  glAccount           Account      @relation(fields: [glAccountId], references: [id], onDelete: Cascade)
 
-  lineItems           SalesOrderLineItem[] // Relation with SalesOrderLineItems
+  lineItems           SalesOrderLineItem[]
 
-  @@index([taxType, glAccountId]) // Index for quick lookups
+  @@index([taxType, glAccountId])
 }
