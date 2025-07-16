@@ -21,7 +21,6 @@ export const SalesOrderPage: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      // Format data for export
       const formattedSalesOrders = salesOrders.map((order) => ({
         "Sales Order No": order.soNumber,
         "Customer Name": order.customer?.name,
@@ -31,12 +30,10 @@ export const SalesOrderPage: React.FC = () => {
         Status: order.status,
       }));
 
-      // Create a worksheet and a workbook
       const ws = utils.json_to_sheet(formattedSalesOrders);
       const wb = utils.book_new();
       utils.book_append_sheet(wb, ws, "Sales Orders");
 
-      // Write the Excel file and trigger download
       writeFile(wb, "SalesOrders.xlsx");
 
       message.success("Sales Orders exported to Excel!");

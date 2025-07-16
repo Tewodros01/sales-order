@@ -24,18 +24,16 @@ const SalesOrderList: React.FC = () => {
   const [deleting, setDeleting] = useState<boolean>(false);
 
   useEffect(() => {
-    // Fetch sales orders with all the filters
     dispatch(fetchSalesOrders({
       search: searchTerm,
       dateFrom: dateRange ? dateRange[0].toISOString() : undefined,
       dateTo: dateRange ? dateRange[1].toISOString() : undefined,
       transactionType,
-      arAccountId,  // Pass the AR Account ID (id instead of title)
+      arAccountId,
     }));
   }, [dispatch, searchTerm, dateRange, transactionType, arAccountId]);
 
   useEffect(() => {
-    // Fetch AR Accounts for the dropdown
     const fetchArAccounts = async () => {
       try {
         const response = await getAccounts();
@@ -145,7 +143,7 @@ const SalesOrderList: React.FC = () => {
   };
 
   const handleArAccountChange = (value: string) => {
-    setArAccountId(value); // Update to use AR Account ID
+    setArAccountId(value);
   };
 
   return (

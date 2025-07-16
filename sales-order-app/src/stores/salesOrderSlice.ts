@@ -17,7 +17,7 @@ const initialState: SalesOrderState = {
 // Fetch sales orders action
 export const fetchSalesOrders = createAsyncThunk(
   'salesOrder/fetchSalesOrders',
-  async (params: { search?: string; dateFrom?: string; dateTo?: string; transactionType?: string; arAccountId?: string }) => {
+  async (params?: { search?: string; dateFrom?: string; dateTo?: string; transactionType?: string; arAccountId?: string }) => {
     const response = await getSalesOrders(params);
     return response.data;
   }
